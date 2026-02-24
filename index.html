@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalu AI Games - My PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db"> 
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            background: linear-gradient(to right, #3498db, #8e44ad); 
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            overflow: hidden; /* Prevent scroll */
+        }
+        .container { 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 30px 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            backdrop-filter: blur(10px); /* Glassmorphism effect */
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 90%;
+            width: 400px;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        p { font-size: 1.1em; margin-bottom: 25px; }
+        button { 
+            background: #2ecc71; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            font-size: 1.2em; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        button:hover { 
+            background: #27ae60; 
+            transform: translateY(-2px); 
+        }
+        #gameCanvas { 
+            background: #2c3e50; 
+            border-radius: 10px; 
+            border: 2px solid rgba(255, 255, 255, 0.5); 
+            margin-top: 20px; 
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="introScreen">
+        <h1>কালু এআই গেম জোন 🎮</h1>
+        <p>একটি মজার PWA গেম খেলুন!</p>
+        <button id="startGameButton">গেম শুরু করুন</button>
+    </div>
+
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+
+    <script>
+        // সার্ভিস ওয়ার্কার রেজিস্টার করা (অফলাইন ও ইনস্টল করার জন্য)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker Registered for Game PWA!"))
+            .catch(err => console.error("Service Worker registration failed:", err));
+        }
+
+        const startGameButton = document.getElementById('startGameButton');
+        const introScreen = document.getElementById('introScreen');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const ctx = gameCanvas.getContext('2d');
+
+        let gameRunning = false;
+        let playerX = gameCanvas.width / 2;
+        let score = 0;
+
+        function drawPlayer() {
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(playerX - 10, gameCanvas.height - 30, 20, 20);
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            drawPlayer();
+            // Basic score display
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.fillText('Score: ' + score, 10, 20);
+            
+            // Dummy game logic - player moves randomly
+            playerX += (Math.random() - 0.5) * 10;
+            if (playerX < 0) playerX = 0;
+            if (playerX > gameCanvas.width) playerX = gameCanvas.width;
+
+            score++; // Increase score just to show it's "running"
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        startGameButton.addEventListener('click', () => {
+            introScreen.style.display = 'none';
+            gameCanvas.style.display = 'block';
+            gameRunning = true;
+            score = 0;
+            gameLoop();
+        });
+
+        // Basic touch/mouse control (dummy)
+        gameCanvas.addEventListener('mousemove', (e) => {
+            if (gameRunning) {
+                const rect = gameCanvas.getBoundingClientRect();
+                playerX = e.clientX - rect.left;
+            }
+        });
+        gameCanvas.addEventListener('touchmove', (e) => {
+            if (gameRunning && e.touches.length > 0) {
+                const rect = gameCanvas.getBoundingClientRect();
+                playerX = e.touches[0].clientX - rect.left;
+                e.preventDefault(); // Prevent scrolling
+            }
+        });
+    </script>
+</body>
+</html>
